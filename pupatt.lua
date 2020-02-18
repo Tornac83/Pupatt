@@ -105,6 +105,16 @@ function addAttachment(slot, id) {
   local attach = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, id, 0x00, unequip, 0x00, 0x12, pupSub, 0x0000, slots):totable();
   table.insert(attachmentQueue, { 0x102, attach});
 };
+	
+--Pass in a slot ID + hex id of the Attachment
+-- Slot ID 1 = Head, 2=frame, 3-14 = attachment slots
+function addAttachment(slot, id) {
+  slotOffset = 9;
+  packet = {0x5302, 0x0000, id, 0x00, unequip, 0x00, 0x12, pupSub, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  packet[slot + slotOffset] = id;
+  local attach = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', packet):totable();
+  table.insert(attachmentQueue, { 0x102, attach});
+};
 
 ----------------------------------------------------------------------------------------------------
 -- desc: Pup attachment struct.packing.
