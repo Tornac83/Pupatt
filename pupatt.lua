@@ -25,7 +25,7 @@
 
 _addon.author   = 'tornac';
 _addon.name     = 'pupatt';
-_addon.version  = '1.00';
+_addon.version  = '1.01';
 
 ---------------------------------
 --DO NOT EDIT BELOW THIS LINE
@@ -64,16 +64,16 @@ end);
 ashita.register_event('incoming_packet', function(id, size, packet)
 	-- Party Member's Status
 	if (id == 0x044) then
-			DiffPack		= struct.unpack('B', packet, 0x05 + 1);
-      equippedOffset = 1; -- Increase by one byte every loop
-			if (DiffPack == 0) then
+		DiffPack		= struct.unpack('B', packet, 0x05 + 1);
+		equippedOffset = 1; -- Increase by one byte every loop
+		if (DiffPack == 0) then
         -- Unpack 14 bytes and set the slotid:attachmentid into currentAttachments table
-        for i = 1, 14 do
-          attachmentId = string.format("0x0%X" , struct.unpack('B', packet, 0x08 + offset));
-          currentAttachments[slot] = attachmentId;
-          equippedOffset += 1;
-        end
-      end
+			for i = 1, 14 do
+			  attachmentId = string.format("0x0%X" , struct.unpack('B', packet, 0x08 + equippedOffset));
+			  currentAttachments[i] = attachmentId;
+			  equippedOffset = equippedOffset + 1;
+			end
+		end
 --				CurAttHead		= string.format("0x0%X" , struct.unpack('B', packet, 0x08 + 1));
 --				CurAttBody 		= string.format("0x%X" ,struct.unpack('B', packet, 0x09 + 1));
 --				CurAttOne 		= struct.unpack('B', packet, 0x0A + 1);
@@ -99,12 +99,12 @@ end);
 
 --Pass in a slot ID + hex id of the Attachment
 -- Slot ID 1 = Head, 2=frame, 3-14 = attachment slots
-function addAttachment(slot, id) {
-  slots = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  slots[slot] = id;
-  local attach = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, id, 0x00, unequip, 0x00, 0x12, pupSub, 0x0000, slots[1],slots[2],slots[3],slots[4],slots[5],slots[6],slots[7],slots[8],slots[9],slots[10],slots[11],slots[12],slots[13],slots[14]):totable();
-  table.insert(attachmentQueue, { 0x102, attach});
-};
+function addAttachment(slot, id) 
+	slots = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	slots[slot] = id;
+	local attach = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, id, 0x00, unequip, 0x00, 0x12, pupSub, 0x0000, slots[1],slots[2],slots[3],slots[4],slots[5],slots[6],slots[7],slots[8],slots[9],slots[10],slots[11],slots[12],slots[13],slots[14]):totable();
+	table.insert(attachmentQueue, { 0x102, attach});
+end;
 
 ----------------------------------------------------------------------------------------------------
 -- desc: Pup attachment struct.packing.
@@ -112,11 +112,11 @@ function addAttachment(slot, id) {
 
 function load_pupatt(attachmentSet)
 
-	if (CurAttHead == nil) then
-		local CurAttOne = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, 0x01, 0x00, unequip, 0x00, 0x12, pupSub, 0x0000, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00):totable();
-		AddOutgoingPacket(0x102, CurAttOne);
-		print('please try again, Current pup attachement info not loaded.')
-	else
+--	if (CurAttHead == nil) then
+--		local CurAttOne = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, 0x01, 0x00, unequip, 0x00, 0x12, pupSub, 0x0000, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00):totable();
+--		AddOutgoingPacket(0x102, CurAttOne);
+--		print('please try again, Current pup attachement info not loaded.')
+--	else
 
 		local player					= GetPlayerEntity();
 		local pet 						= GetEntity(player.PetTargetIndex);
@@ -131,24 +131,23 @@ function load_pupatt(attachmentSet)
 
 		--print(MainJob, SubJob, buffs[0], limitpoints, zone_id)
 
-			if (SubJob == 18) then
-				local pupSub	= 0x01;
+		if (SubJob == 18) then
+			local pupSub	= 0x01;
+		end
+
+		if (recastTimerDeactivate == 0 and pet ~= nil) then
+			AshitaCore:GetChatManager():QueueCommand('/ja "Deactivate" <me>' , 1);
+		elseif(recastTimerDeactivate > 0) then
+			print('Deactivate is not ready yet please try again later.')
+		end
+		if (MainJob == 18 or SubJob == 18) then
+			for slot,item in ipairs(attachmentSet) do
+				if(currentAttachments[slot] ~= attachmentSet[slot]) then
+				  addAttachment(slot,item);
+				end
 			end
-
-			if (recastTimerDeactivate == 0 and pet ~= nil) then
-				AshitaCore:GetChatManager():QueueCommand('/ja "Deactivate" <me>' , 1);
-			elseif(recastTimerDeactivate > 0) then
-				print('Deactivate is not ready yet please try again later.')
-			end
-
-
-      for slot,item in ipairs(attachmentSet) do
-        if()
-          addAttachment(slot,item);
-        end
-
-	end
-
+		end
+--	end
 end;
 
 ---------------------------------------------------------------------------------------------------
@@ -165,9 +164,9 @@ function new_profile(profileName)
 			print(convk)
 			print(convv)
 		end
-		table.insert(newProfile, {convk,convv})
+		table.insert(newProfile, convv)
 	end
-	attachmentProfiles[profileName] = newProfile;
+	pupattProfiles[profileName] = newProfile;
 end;
 
 ---------------------------------------------------------------------------------------------------
@@ -176,7 +175,7 @@ end;
 ---------------------------------------------------------------------------------------------------
 function list_profiles()
 	print("Current Profiles:\n")
-	printProfiles = ashita.settings.JSON:encode_pretty(attachmentProfiles, nil, {pretty = true, indent = "->    " });
+	printProfiles = ashita.settings.JSON:encode_pretty(pupattProfiles, nil, {pretty = true, indent = "->    " });
 	print(printProfiles);
 end;
 
@@ -210,11 +209,11 @@ end);
 
 
 ---------------------------------------------------------------------------------------------------
--- func: load_objectives
--- desc: load RoE objectives from a file
+-- func: load_pupattSettings
+-- desc: load pup attachments from a file
 ---------------------------------------------------------------------------------------------------
 function load_pupattSettings()
-    local tempCommands = ashita.settings.load(_addon.path .. '/settings/pupatt.json');
+    local tempCommands = ashita.settings.load(_addon.path .. '/settings/pupattProfiles.json');
 	if tempCommands ~= nil then
 		print('Stored objective profiles found.');
 		pupattProfiles = tempCommands;
@@ -224,10 +223,16 @@ function load_pupattSettings()
 	end
 end;
 
-	--AddOutgoingPacket(0x102, attchange);
-	--Send a unity ranking menu packet to look natural like we opened the menu?
-	--local testequip = struct.pack('BBI2BB', 0x50, 0x04, 0x0000, 0x03, 0x06):totable();
-	--AddOutgoingPacket(0x050, testequip);
+---------------------------------------------------------------------------------------------------
+-- func: save_pupattProfile
+-- desc: saves current pup attachment profiles to a file
+---------------------------------------------------------------------------------------------------
+function save_profiles()
+	print("Writing saved profiles to file settings/pupattProfiles.json");
+	-- Save the addon settings to a file (from the addonSettings table)
+	ashita.settings.save(_addon.path .. '/settings'  
+						 .. '/pupattProfiles.json' , pupattProfiles);
+end;
 
 ashita.register_event('command', function(command, ntype)
     -- Get the arguments of the command..
@@ -244,6 +249,21 @@ ashita.register_event('command', function(command, ntype)
 
     if (#args >= 2 and args[2] == 'list') then
   		list_profiles()
+  		return true;
+  	end
+	
+    if (#args >= 2 and args[2] == 'save') then
+  		save_profiles()
+  		return true;
+  	end
+	
+	if (#args >= 2 and args[2] == 'loadprofile') then
+  		print("Loading " .. args[3]);
+		if pupattProfiles[args[3]] then
+			load_pupatt(pupattProfiles[args[3]]);
+		else
+			print (args[3] .. " profile not found");
+		end
   		return true;
   	end
 
