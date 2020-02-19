@@ -284,6 +284,7 @@ ashita.register_event('command', function(command, ntype)
 	if (#args >= 2 and args[2] == 'loadprofile') then
   		print("Loading " .. args[3]);
 		if pupattProfiles[args[3]] then
+			clearAttachments();
 			load_pupatt(pupattProfiles[args[3]]);
 		else
 			print (args[3] .. " profile not found");
