@@ -49,6 +49,9 @@ pupSub			= 0x00;
 
 currentAttachments = {}; -- table for holding current attachments
 pupattProfiles = { }; -- table for holding attachment profiles
+petlessZones = {50,235,234,224,284,233,70,257,251,14,242,250,226,245,
+                 237,249,131,53,252,231,236,246,232,240,247,243,223,248,230,
+                 26,71,244,239,238,241,256,257}
 
 ---------------------------------------------------------------
 --try to load  file when addon is loaded
@@ -56,6 +59,19 @@ pupattProfiles = { }; -- table for holding attachment profiles
 ashita.register_event('load', function()
     load_pupattSettings();
 end);
+
+---------------------------------------------------------------
+-- sees if any values are in a given table.
+---------------------------------------------------------------
+
+function contains(table, val)
+   for i=1,#table do
+      if table[i] == val then 
+         return true
+      end
+   end
+   return false;
+end;
 
 ------------------------------------------------------------------------------------------------
 -- desc: Getting pup information.
@@ -78,6 +94,10 @@ ashita.register_event('incoming_packet', function(id, size, packet)
 	return false;
 end);
 
+------------------------------------------------------------------------------------------------
+-- desc: Adds all the attachements from the given profile.
+----------------------------------------------------------------------------------------------------
+
 --Pass in a slot ID + hex id of the Attachment
 -- Slot ID 1 = Head, 2=frame, 3-14 = attachment slots
 function addAttachment(slot, id) 
@@ -86,6 +106,10 @@ function addAttachment(slot, id)
 	local attach = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, id, 0x00, unequip, 0x00, 0x12, pupSub, 0x0000, slots[1],slots[2],slots[3],slots[4],slots[5],slots[6],slots[7],slots[8],slots[9],slots[10],slots[11],slots[12],slots[13],slots[14]):totable();
 	table.insert(attachmentQueue, { 0x102, attach});
 end;
+
+------------------------------------------------------------------------------------------------
+-- desc: Clearing all the attachment out of the puppet.
+----------------------------------------------------------------------------------------------------
  
 function clearAttachments() 
 	local player					= GetPlayerEntity();
@@ -167,6 +191,7 @@ end;
 -- func: new_profile
 -- desc: Creates new profile with current objectives
 ---------------------------------------------------------------------------------------------------
+
 function new_profile(profileName)
 	print("Saving current attachments to profile " .. profileName)
 	newProfile = {}
@@ -240,6 +265,7 @@ end;
 -- func: save_pupattProfile
 -- desc: saves current pup attachment profiles to a file
 ---------------------------------------------------------------------------------------------------
+
 function save_profiles()
 	print("Writing saved profiles to file settings/pupattProfiles.json");
 	-- Save the addon settings to a file (from the addonSettings table)
@@ -291,17 +317,4 @@ ashita.register_event('command', function(command, ntype)
 		end
   		return true;
   	end
-
-	if (#args >= 2 and args[2] == 'dd') then
-		--try to load pupatt file when called.
-		load_pupatt('0x02','0x22','0x03','0x0B','0x11','0x05','0x12','0x0F','0x50','0x46','0x49','0xC6','0xCE','0xCD');
-		--print("hello World")
-		return true;
-	end
-
-	if (#args >= 2 and args[2] == '60') then
-		--try to load pupatt file when called.
-		load_pupatt('0x02','0x21','0xCA','0xA7','0x46','0x49','0xC6','0x64','0x6A','0x84','0x87','0x04','0x0A','0xA2');
-		return true;
-	end
 end);
