@@ -178,29 +178,40 @@ function load_pupatt(attachmentSet)
 			print('Deactivate is not ready yet please try again later.')
 		end
 		if (MainJob == 18 or SubJob == 18) then
+			Ashita.timer.once(15,summon_pet)
 			for slot,item in ipairs(attachmentSet) do
 				if(currentAttachments[slot] ~= attachmentSet[slot]) then
 				  addAttachment(slot,item);
 				end
 			end
-			repeat
-				if contains(petlessZones, zone_id) then
-					print("hello")
-					return
-				else
-					if (recastTimerActivate == 0) then
-						AshitaCore:GetChatManager():QueueCommand('/ja "Activate" <me>' , 1);
-					elseif(recastTimerdeusex == 0) then
-						print('Activate is not ready using Deus Ex Automata')
-						AshitaCore:GetChatManager():QueueCommand('/ja "Deus Ex Automata" <me>' , 1);
-					else
-						print('Activate and Deus Ex Automata is not ready yet please try again later.')
-					end
-				end
-			until #attachmentQueue == 0
 		end
 --	end
 end;
+
+----------------------------------------------------------------------------------------------------
+-- desc: Summons your pet based on cooldowns and zone_id.
+----------------------------------------------------------------------------------------------------
+
+
+function Summon_pet()
+
+	if contains(petlessZones, zone_id) then
+		print("You are in a zone that dose not allow pets.")
+		return
+	else
+		if (recastTimerActivate == 0) then
+			AshitaCore:GetChatManager():QueueCommand('/ja "Activate" <me>' , 1);
+		elseif(recastTimerdeusex == 0) then
+			print('Activate is not ready using Deus Ex Automata')
+			AshitaCore:GetChatManager():QueueCommand('/ja "Deus Ex Automata" <me>' , 1);
+		else
+			print('Activate and Deus Ex Automata is not ready yet please try again later.')
+		end
+	end
+end;
+
+
+
 
 ---------------------------------------------------------------------------------------------------
 -- func: new_profile
