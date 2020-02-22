@@ -46,57 +46,12 @@ objDelay        = 0.65; -- The delay to prevent spamming packets.
 objTimer        = 0;    -- The current time used for delaying packets.
 unequip			= 0x00;
 pupSub			= 0x00;
-offset 			= 0x04;
 
 currentAttachments = {}; -- table for holding current attachments
 pupattProfiles = { }; -- table for holding attachment profiles
 petlessZones = {50,235,234,224,284,233,70,257,251,14,242,250,226,245,
                  237,249,131,53,252,231,236,246,232,240,247,243,223,248,230,
                  26,71,244,239,238,241,256,257}
-
----------------------------------------------------------------
- -- Locate the pointers needed for this library..
----------------------------------------------------------------
-
-local pointer1 = ashita.memory.findpattern('FFXiMain.dll', 0, 'C1E1032BC8B0018D????????????B9????????F3A55F5E5B', 10, 0);
-
----------------------------------------------------------------
---Ensure the pattern was found.
----------------------------------------------------------------
-
-local offset1 = ashita.memory.read_uint32(pointer1);
-	if (offset1 == 0) then
-		err('Failed to read required pointer value. (1)');
-		return false;
-	end
-
----------------------------------------------------------------
--- Read the inventory pointer..
----------------------------------------------------------------
-    
-pointer = ashita.memory.read_uint32(AshitaCore:GetPointerManager():GetPointer('inventory'));
-    if (pointer == 0) then
-        return {};
-    end
-
----------------------------------------------------------------
--- Read the inventory pointer..
----------------------------------------------------------------
-	
-pointer = ashita.memory.read_uint32(pointer);
-    if (pointer == 0) then
-        return {};
-    end
-
----------------------------------------------------------------
---reads the attachment data and puts it into hex format.
----------------------------------------------------------------
-
-currentAttachments = ashita.memory.read_array((pointer + offset1) + offset, 0x0E);
-
-	for i = 1, 14 do
-		currentAttachments[i] = string.format("0x%X" , currentAttachments[i]);
-	end;
 
 ---------------------------------------------------------------
 --try to load  file when addon is loaded
@@ -157,7 +112,6 @@ end;
 ----------------------------------------------------------------------------------------------------
  
 function clearAttachments() 
-<<<<<<< Updated upstream
 	local player					= GetPlayerEntity();
 	local pet 						= GetEntity(player.PetTargetIndex);
 	local recastTimerActivate   	= ashita.ffxi.recast.get_ability_recast_by_id(205);
@@ -171,13 +125,6 @@ function clearAttachments()
 	end
 	
 	if currentAttachments[1] ~= nil and pet == nil then
-=======
-
-local player					= GetPlayerEntity();
-local pet 						= GetEntity(player.PetTargetIndex);
-
-	if(pet == nil) then 
->>>>>>> Stashed changes
 		print ("Clearing Attachments");
 		slots = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 		for slot,id in pairs(currentAttachments) do 
@@ -192,11 +139,7 @@ local pet 						= GetEntity(player.PetTargetIndex);
 		local unattach = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, 0x00, 0x00, 0x01, 0x00, 0x12, pupSub, 0x0000, slots[1],slots[2],slots[3],slots[4],slots[5],slots[6],slots[7],slots[8],slots[9],slots[10],slots[11],slots[12],slots[13],slots[14]):totable();
 		table.insert(attachmentQueue, { 0x102, unattach});
 	else
-<<<<<<< Updated upstream
 		print ("Current attachments not loaded, try zoning / equipping an attachment");
-=======
-		print("Puppet still out please despawn to unequip attachments.")
->>>>>>> Stashed changes
 	end
 end;
 
@@ -206,7 +149,6 @@ end;
 
 function load_pupatt(attachmentSet)
 
-<<<<<<< Updated upstream
 --	if (CurAttHead == nil) then
 --		local CurAttOne = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, 0x01, 0x00, unequip, 0x00, 0x12, pupSub, 0x0000, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00):totable();
 --		AddOutgoingPacket(0x102, CurAttOne);
@@ -225,17 +167,6 @@ function load_pupatt(attachmentSet)
 		local zone_id 					= AshitaCore:GetDataManager():GetParty():GetMemberZone(0);
 
 		--print(MainJob, SubJob, buffs[0], limitpoints, zone_id)
-=======
-	local player					= GetPlayerEntity();
-	local pet 						= GetEntity(player.PetTargetIndex);
-	local MainJob 					= AshitaCore:GetDataManager():GetPlayer():GetMainJob();
-	local SubJob	 				= AshitaCore:GetDataManager():GetPlayer():GetSubJob();
-
-		
-	if (MainJob == 18 or SubJob == 18 and pet == nil) then
-	
-		--print(player.PetTargetIndex)
->>>>>>> Stashed changes
 
 		if (SubJob == 18) then
 			local pupSub	= 0x01;
@@ -254,30 +185,7 @@ function load_pupatt(attachmentSet)
 				end
 			end
 		end
-<<<<<<< Updated upstream
 --	end
-=======
-	else
-		print("Puppet is still out please please despawn pet to make changes to attachments.")
-	end
-end;
-
-----------------------------------------------------------------------------------------------------
--- desc: Despawns your pet based on cooldowns.
-----------------------------------------------------------------------------------------------------
-
-function despawn_pet()
-
-	local recastTimerDeactivate   	= ashita.ffxi.recast.get_ability_recast_by_id(208);
-	local player					= GetPlayerEntity();
-	local pet 						= GetEntity(player.PetTargetIndex);
-
-	if (recastTimerDeactivate == 0 and pet ~= nil) then
-		AshitaCore:GetChatManager():QueueCommand('/ja "Deactivate" <me>' , 1);
-	elseif (recastTimerDeactivate > 0 and pet ~= nil) then
-		print('Deactivate is not ready yet please try again later.')
-	end
->>>>>>> Stashed changes
 end;
 
 ----------------------------------------------------------------------------------------------------
@@ -435,36 +343,4 @@ ashita.register_event('command', function(command, ntype)
 		end
   		return true;
   	end
-<<<<<<< Updated upstream
-=======
-	
-	if (#args >= 2 and args[2] == 'despawn') then
-  		despawn_pet()
-  		return true;
-  	end
-
-    if (#args >= 2 and args[2] == 'loadprofile') then
-          print("Loading " .. args[3]);
-        if pupattProfiles[args[3]] then
-			--despawn_pet()
-            ashita.timer.once(1,clearAttachments);
-            ashita.timer.once(4,load_pupatt,pupattProfiles[args[3]]);
-			--ashita.timer.once(20,Summon_pet);
-        else
-            print (args[3] .. " profile not found");
-        end
-          return true;
-      end
-
---	if (#args >= 2 and args[2] == 'loadprofile') then
---		print("Loading " .. args[3]);
---		if pupattProfiles[args[3]] then
---			clearAttachments();
---			load_pupatt(pupattProfiles[args[3]]);
---		else
---			print (args[3] .. " profile not found");
---		end
- -- 		return true;
- -- 	end
->>>>>>> Stashed changes
 end);
