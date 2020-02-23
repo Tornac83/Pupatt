@@ -307,48 +307,21 @@ function load_pupattSettings()
 	end
 
 ---------------------------------------------------------------
- -- Locate the pointers needed for this library..
+ -- Prepairs, reads and stores the current attachment for 1st time use.
 ---------------------------------------------------------------
 
 local pointer1 = ashita.memory.findpattern('FFXiMain.dll', 0, 'C1E1032BC8B0018D????????????B9????????F3A55F5E5B', 10, 0);
-
----------------------------------------------------------------
---Ensure the pattern was found.
----------------------------------------------------------------
-
-local offset1 = ashita.memory.read_uint32(pointer1);
-	if (offset1 == 0) then
-		err('Failed to read required pointer value. (1)');
-		return false;
+	if (pointer1 == 0) then
+        	err('Failed to locate current attachments, please cycle a attachment to continue.');
+	else
+		local offset1 = ashita.memory.read_uint32(pointer1);
+		pointer = ashita.memory.read_uint32(AshitaCore:GetPointerManager():GetPointer('inventory'));
+		pointer = ashita.memory.read_uint32(pointer);
+		currentAttachments = ashita.memory.read_array((pointer + offset1) + offset, 0x0E);
+		for i = 1, 14 do
+			currentAttachments[i] = string.format("0x%X" , currentAttachments[i]);
+		end
 	end
-
----------------------------------------------------------------
--- Read the inventory pointer..
----------------------------------------------------------------
-    
-pointer = ashita.memory.read_uint32(AshitaCore:GetPointerManager():GetPointer('inventory'));
-    if (pointer == 0) then
-        return {};
-    end
-
----------------------------------------------------------------
--- Read the inventory pointer..
----------------------------------------------------------------
-	
-pointer = ashita.memory.read_uint32(pointer);
-    if (pointer == 0) then
-        return {};
-    end
-
----------------------------------------------------------------
---reads the attachment data and puts it into hex format.
----------------------------------------------------------------
-
-currentAttachments = ashita.memory.read_array((pointer + offset1) + offset, 0x0E);
-
-	for i = 1, 14 do
-		currentAttachments[i] = string.format("0x%X" , currentAttachments[i]);
-	end;
 end;
 
 ---------------------------------------------------------------------------------------------------
