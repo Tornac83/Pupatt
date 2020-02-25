@@ -5,18 +5,18 @@ pupatt commands /pupatt
 
 /pupatt load profileName, - Loads a saved profile from settings.
 
-/pupatt newprofile profileName,  - creates a new profile.
+/pupatt newprofile profileName,  - Creates a new profile.
 
-/pupatt save,  - Saves the new profile created.
+/pupatt save,     - Saves the new profile created.
 
-/pupatt list,  - Lists the profiles as well as the hex values for each attachment.
+/pupatt list,     - Lists the profiles as well as the hex values for each attachment.
 
 /pupatt current,  - Lists the current attachments hex values.
 
-/pupatt clear,  - Clears the current attachments.
+/pupatt clear,    - Clears the current attachments.
 
-/pupatt save,  - Saves the new profile created.
+/pupatt save,     - Saves the new profile created.
 
-/pupatt spawn,  - Spawns the puppet using whatever is off cooldown.
+/pupatt spawn,    - Spawns the puppet using whatever is off cooldown.
 
-/pupatt despawn,  - despawns the puppet.	
+/pupatt despawn,  - Despawns the puppet.	
