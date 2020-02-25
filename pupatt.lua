@@ -169,10 +169,11 @@ function load_pupatt(attachmentSet)
 		if (SubJob == 18) then
 			local pupSub	= 0x01;
 		end
-		--ashita.timer.once( 30, Summon_pet)
-		for slot,item in ipairs(attachmentSet) do
-			addAttachment(slot,item);
-		end
+        ashita.timer.once( 30, Summon_pet)
+            for slot,item in ipairs(attachmentSet) do
+                addAttachment(slot,item);
+            end
+		summonPet = true
 	else
 		print("Puppet is still out please please despawn pet to make changes to attachments.")
 	end
@@ -232,12 +233,20 @@ function process_queue()
 
         -- Ensure the queue has something to process..
         if (#attachmentQueue > 0) then
+            processingAttachmentsFlag = true
             -- Obtain the first queue entry..
             local data = table.remove(attachmentQueue, 1);
 
             -- Send the queued object..
-			print("Sending packet #"..(#attachmentQueue + 1))
+            print("Sending packet #"..(#attachmentQueue + 1))
             AddOutgoingPacket(data[1], data[2]);
+        end
+        if summonPet and not processingAttachments then
+            summon_pet()
+            summonPet = false
+        end
+        if (#attachmentQueue == 0) then
+            processingAttachmentsFlag = false
         end
     end
 end
