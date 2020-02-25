@@ -73,6 +73,7 @@ local zone_id 					= AshitaCore:GetDataManager():GetParty():GetMemberZone(0);
 ---------------------------------------------------------------
 --try to load  file when addon is loaded
 ---------------------------------------------------------------
+
 ashita.register_event('load', function()
     load_pupattSettings();
 end);
@@ -91,7 +92,7 @@ function contains(table, val)
 end;
 
 ------------------------------------------------------------------------------------------------
--- desc: Getting pup information.
+-- desc: Getting pup information from packets for subsequent equipment changes.
 ----------------------------------------------------------------------------------------------------
 
 ashita.register_event('incoming_packet', function(id, size, packet)
@@ -129,7 +130,6 @@ end;
 ----------------------------------------------------------------------------------------------------
  
 function clearAttachments() 
-
 local player					= GetPlayerEntity();
 local pet 						= GetEntity(player.PetTargetIndex);
 
@@ -157,26 +157,21 @@ end;
 ----------------------------------------------------------------------------------------------------
 
 function load_pupatt(attachmentSet)
-
 	local player					= GetPlayerEntity();
 	local pet 						= GetEntity(player.PetTargetIndex);
 	local MainJob 					= AshitaCore:GetDataManager():GetPlayer():GetMainJob();
 	local SubJob	 				= AshitaCore:GetDataManager():GetPlayer():GetSubJob();
-
-		
+	
 	if (MainJob == 18 or SubJob == 18 and pet == nil) then
 	
 		--print(player.PetTargetIndex)
-
+		
 		if (SubJob == 18) then
 			local pupSub	= 0x01;
 		end
-
 		--ashita.timer.once( 30, Summon_pet)
-		if (pet == nil) then
-			for slot,item in ipairs(attachmentSet) do
-				addAttachment(slot,item);
-			end
+		for slot,item in ipairs(attachmentSet) do
+			addAttachment(slot,item);
 		end
 	else
 		print("Puppet is still out please please despawn pet to make changes to attachments.")
@@ -188,7 +183,6 @@ end;
 ----------------------------------------------------------------------------------------------------
 
 function despawn_pet()
-
 	local recastTimerDeactivate   	= ashita.ffxi.recast.get_ability_recast_by_id(208);
 	local player					= GetPlayerEntity();
 	local pet 						= GetEntity(player.PetTargetIndex);
@@ -205,7 +199,6 @@ end;
 ----------------------------------------------------------------------------------------------------
 
 function Summon_pet()
-
 	local recastTimerActivate   	= ashita.ffxi.recast.get_ability_recast_by_id(205);
 	local recastTimerdeusex   		= ashita.ffxi.recast.get_ability_recast_by_id(115);
 	local zone_id 					= AshitaCore:GetDataManager():GetParty():GetMemberZone(0);
@@ -228,37 +221,6 @@ function Summon_pet()
 	end
 end;
 
----------------------------------------------------------------------------------------------------
--- func: new_profile
--- desc: Creates new profile with current objectives
----------------------------------------------------------------------------------------------------
-
-function new_profile(profileName)
-	print("Saving current attachments to profile " .. profileName)
-	newProfile = {}
-	for k,v in pairs (currentAttachments) do
-		convv = string.format("0x%X",v)
-		if (__debug) then
-			print(string.format("slot id and attachmentId: %d, 0x%X", k, v));
-			print(convk)
-			print(convv)
-		end
-		table.insert(newProfile, convv)
-	end
-	pupattProfiles[profileName] = newProfile;
-end;
-
----------------------------------------------------------------------------------------------------
--- func: list_profiles
--- desc: Lists saved profiles
----------------------------------------------------------------------------------------------------
-
-function list_profiles()
-	print("Current Profiles:\n")
-	printProfiles = ashita.settings.JSON:encode_pretty(pupattProfiles, nil, {pretty = true, indent = "->    " });
-	print(printProfiles);
-end;
-
 ----------------------------------------------------------------------------------------------------
 -- func: process_queue
 -- desc: Processes the packet queue to be sent.
@@ -274,7 +236,7 @@ function process_queue()
             local data = table.remove(attachmentQueue, 1);
 
             -- Send the queued object..
-			print("Sending packet #", #attachmentQueue + 1)
+			print("Sending packet #"..(#attachmentQueue + 1))
             AddOutgoingPacket(data[1], data[2]);
         end
     end
@@ -325,6 +287,37 @@ local pointer1 = ashita.memory.findpattern('FFXiMain.dll', 0, 'C1E1032BC8B0018D?
 end;
 
 ---------------------------------------------------------------------------------------------------
+-- func: new_profile
+-- desc: Creates new profile with current objectives
+---------------------------------------------------------------------------------------------------
+
+function new_profile(profileName)
+	print("Saving current attachments to profile " .. profileName)
+	newProfile = {}
+	for k,v in pairs (currentAttachments) do
+		convv = string.format("0x%X",v)
+		if (__debug) then
+			print(string.format("slot id and attachmentId: %d, 0x%X", k, v));
+			print(convk)
+			print(convv)
+		end
+		table.insert(newProfile, convv)
+	end
+	pupattProfiles[profileName] = newProfile;
+end;
+
+---------------------------------------------------------------------------------------------------
+-- func: list_profiles
+-- desc: Lists saved profiles
+---------------------------------------------------------------------------------------------------
+
+function list_profiles()
+	print("Current Profiles:\n")
+	printProfiles = ashita.settings.JSON:encode_pretty(pupattProfiles, nil, {pretty = true, indent = "->    " });
+	print(printProfiles);
+end;
+
+---------------------------------------------------------------------------------------------------
 -- func: save_pupattProfile
 -- desc: saves current pup attachment profiles to a file
 ---------------------------------------------------------------------------------------------------
@@ -340,6 +333,7 @@ end;
 -- func: print_help
 -- desc: Displays a help block for proper command usage.
 ----------------------------------------------------------------------------------------------------
+
 local function print_help(cmd, help)
     -- Print the invalid format header..
     print('\31\200[\31\05' .. _addon.name .. '\31\200]\30\01 ' .. '\30\68Invalid format for command:\30\02 ' .. cmd .. '\30\01'); 
@@ -350,6 +344,10 @@ local function print_help(cmd, help)
     end
 end;
 
+----------------------------------------------------------------------------------------------------
+-- func: user_commands
+-- desc: User commands to help interact with the program.
+----------------------------------------------------------------------------------------------------
 
 ashita.register_event('command', function(command, ntype)
     -- Get the arguments of the command..
@@ -400,7 +398,7 @@ ashita.register_event('command', function(command, ntype)
         if pupattProfiles[args[3]] then
 			--despawn_pet()
             ashita.timer.once(1,clearAttachments);
-            ashita.timer.once(4,load_pupatt,pupattProfiles[args[3]]);
+            ashita.timer.once(1,load_pupatt,pupattProfiles[args[3]]);
 			--ashita.timer.once(20,Summon_pet);
         else
             print (args[3] .. " profile not found");
@@ -408,7 +406,6 @@ ashita.register_event('command', function(command, ntype)
           return true;
       end
 	  
- 
  -- Prints the addon help..
     print_help('/pupatt', {
 		{'/pupatt load profileName', ' - Loads a saved profile from settings.  '},
@@ -423,5 +420,6 @@ ashita.register_event('command', function(command, ntype)
 		
     });
     return true;
+
 
 end);
