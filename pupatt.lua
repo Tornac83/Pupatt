@@ -336,6 +336,21 @@ function save_profiles()
 						 .. '/pupattProfiles.json' , pupattProfiles);
 end;
 
+----------------------------------------------------------------------------------------------------
+-- func: print_help
+-- desc: Displays a help block for proper command usage.
+----------------------------------------------------------------------------------------------------
+local function print_help(cmd, help)
+    -- Print the invalid format header..
+    print('\31\200[\31\05' .. _addon.name .. '\31\200]\30\01 ' .. '\30\68Invalid format for command:\30\02 ' .. cmd .. '\30\01'); 
+
+    -- Loop and print the help commands..
+    for k, v in pairs(help) do
+        print('\31\200[\31\05' .. _addon.name .. '\31\200]\30\01 ' .. '\30\68Syntax:\30\02 ' .. v[1] .. '\30\71 ' .. v[2]);
+    end
+end;
+
+
 ashita.register_event('command', function(command, ntype)
     -- Get the arguments of the command..
     local args = command:args();
@@ -370,7 +385,7 @@ ashita.register_event('command', function(command, ntype)
   		return true;
   	end
 	
-	if (#args >= 2 and args[2] == 'summon') then
+	if (#args >= 2 and args[2] == 'spawn') then
   		Summon_pet()
   		return true;
   	end
@@ -380,7 +395,7 @@ ashita.register_event('command', function(command, ntype)
   		return true;
   	end
 
-    if (#args >= 2 and args[2] == 'loadprofile') then
+    if (#args >= 2 and args[2] == 'load') then
           print("Loading " .. args[3]);
         if pupattProfiles[args[3]] then
 			--despawn_pet()
@@ -392,15 +407,21 @@ ashita.register_event('command', function(command, ntype)
         end
           return true;
       end
+	  
+ 
+ -- Prints the addon help..
+    print_help('/pupatt', {
+		{'/pupatt load profileName', ' - Loads a saved profile from settings.  '},
+		{'/pupatt newprofile profileName', ' - creates a new profile.'},
+		{'/pupatt save', ' - Saves the new profile created.'},
+		{'/pupatt list', ' - Lists the profiles as well as the hex values for each attachment.'},
+		{'/pupatt current', ' - Lists the current attachments hex values.'},
+		{'/pupatt clear', ' - Clears the current attachments.'},
+		{'/pupatt save', ' - Saves the new profile created.'},
+		{'/pupatt spawn', ' - Spawns the puppet using whatever is off cooldown.'},
+		{'/pupatt despawn', ' - despawns the puppet.'},	
+		
+    });
+    return true;
 
---	if (#args >= 2 and args[2] == 'loadprofile') then
---		print("Loading " .. args[3]);
---		if pupattProfiles[args[3]] then
---			clearAttachments();
---			load_pupatt(pupattProfiles[args[3]]);
---		else
---			print (args[3] .. " profile not found");
---		end
- -- 		return true;
- -- 	end
 end);
