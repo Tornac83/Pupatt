@@ -205,19 +205,22 @@ function Summon_pet()
 	local player					= GetPlayerEntity();
 	local pet 						= GetEntity(player.PetTargetIndex);
 	
-	if contains(petlessZones, zone_id) then
-		print("You are in a zone that dose not allow pets.")
-		return
-	else
-		if (recastTimerActivate == 0) then
-			print("Using Activate.")
-			AshitaCore:GetChatManager():QueueCommand('/ja "Activate" <me>' , 1);
-		elseif(recastTimerdeusex ~= 0 and recastTimerdeusex == 0 and pet == nil) then
-			print('Activate is not ready using Deus Ex Automata')
-			AshitaCore:GetChatManager():QueueCommand('/ja "Deus Ex Automata" <me>' , 1);
-		elseif(recastTimerdeusex ~= 0 and recastTimerdeusex ~= 0 and pet == nil) then
-			print('Activate and Deus Ex Automata is not ready yet please try again later.')
+	if (pet == nil) then
+		if contains(petlessZones, zone_id) then
+			print("You are in a zone that dose not allow pets.")
+		else
+			if (recastTimerActivate == 0) then
+				print("Using Activate.")
+				AshitaCore:GetChatManager():QueueCommand('/ja "Activate" <me>' , 1);
+			elseif(recastTimerdeusex == 0) then
+				print('Activate is not ready using Deus Ex Automata')
+				AshitaCore:GetChatManager():QueueCommand('/ja "Deus Ex Automata" <me>' , 1);
+			elseif(recastTimerdeusex > 0 and recastTimerdeusex > 0) then
+				print('Activate and Deus Ex Automata is not ready yet please try again later.')
+			end
 		end
+	else
+		print("Your puppet is already out.")
 	end
 end;
 
