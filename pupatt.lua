@@ -48,6 +48,7 @@ objTimer        = 0;    -- The current time used for delaying packets.
 unequip			= 0x00;
 pupSub			= 0x00;
 offset 			= 0x04;
+local PlayerName = nil;
 
 currentAttachments = {}; -- table for holding current attachments
 pupattProfiles = { }; -- table for holding attachment profiles
@@ -232,7 +233,7 @@ end;
 function process_queue()
     if  (os.time() >= (objTimer + objDelay)) then
         objTimer = os.time();
-
+		
         -- Ensure the queue has something to process..
         if (#attachmentQueue > 0) then
             -- Obtain the first queue entry..
@@ -253,6 +254,7 @@ end
 ashita.register_event('render', function()
     -- Process the objectives packet queue..
     process_queue();
+	attFromMemory();
 end);
 
 
@@ -269,23 +271,6 @@ function load_pupattSettings()
 	else
 		print('pupatt profiles could not be loaded. Creating empty lists.');
 		pupattProfiles = { };
-	end
-
----------------------------------------------------------------
- -- Prepairs, reads and stores the current attachment for 1st time use.
----------------------------------------------------------------
-
-local pointer1 = ashita.memory.findpattern('FFXiMain.dll', 0, 'C1E1032BC8B0018D????????????B9????????F3A55F5E5B', 10, 0);
-	if (pointer1 == 0) then
-        	err('Failed to locate current attachments, please cycle a attachment to continue.');
-	else
-		local offset1 = ashita.memory.read_uint32(pointer1);
-		pointer = ashita.memory.read_uint32(AshitaCore:GetPointerManager():GetPointer('inventory'));
-		pointer = ashita.memory.read_uint32(pointer);
-		currentAttachments = ashita.memory.read_array((pointer + offset1) + offset, 0x0E);
-		for i = 1, 14 do
-			currentAttachments[i] = string.format("0x%X" , currentAttachments[i]);
-		end
 	end
 end;
 
@@ -318,6 +303,29 @@ function list_profiles()
 	print("Current Profiles:\n")
 	printProfiles = ashita.settings.JSON:encode_pretty(pupattProfiles, nil, {pretty = true, indent = "->    " });
 	print(printProfiles);
+end;
+
+---------------------------------------------------------------
+ -- Prepairs, reads and stores the current attachment for 1st time use.
+---------------------------------------------------------------
+
+function attFromMemory()
+	if (currentAttachments == nil) then
+		local pointer1 = ashita.memory.findpattern('FFXiMain.dll', 0, 'C1E1032BC8B0018D????????????B9????????F3A55F5E5B', 10, 0);
+			if (pointer1 == 0) then
+					err('Failed to locate current attachments, please cycle a attachment to continue.');
+			else
+				local offset1 = ashita.memory.read_uint32(pointer1);
+				pointer = ashita.memory.read_uint32(AshitaCore:GetPointerManager():GetPointer('inventory'));
+				pointer = ashita.memory.read_uint32(pointer);
+				currentAttachments = ashita.memory.read_array((pointer + offset1) + offset, 0x0E);
+				if (currentAttachments ~= nil) then
+					for i = 1, 14 do
+						currentAttachments[i] = string.format("0x%X" , currentAttachments[i]);
+					end
+				end
+			end
+	end
 end;
 
 ---------------------------------------------------------------------------------------------------
