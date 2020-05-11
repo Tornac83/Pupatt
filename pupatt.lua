@@ -1,5 +1,5 @@
 --[[
-* Ashita - Copyright (c) 2014 - 2016 atom0s [atom0s@live.com]
+* Ashita - Copyright (c) 2014 - 2020 atom0s [atom0s@live.com]
 *
 * This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
 * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/ or send a letter to
@@ -25,7 +25,7 @@
 
 _addon.author   = 'tornac';
 _addon.name     = 'pupatt';
-_addon.version  = '1.01';
+_addon.version  = '1.05';
 
 ---------------------------------
 --DO NOT EDIT BELOW THIS LINE
@@ -40,8 +40,6 @@ require 'timer'
 -- Create a table for holding the current profile to be written
 --------------------------------------------------------------
 currentProfile = { };
-
-
 attachmentQueue = { };  -- Table to hold commands queued for sending
 objDelay        = 0.65; -- The delay to prevent spamming packets.
 objTimer        = 0;    -- The current time used for delaying packets.
@@ -49,6 +47,8 @@ unequip			= 0x00;
 pupSub			= 0x00;
 offset 			= 0x04;
 local PlayerName = nil;
+inProgress		= false; -- packet sending is in progress.
+queOffset 		= 1; -- smoother experience for packets. 
 
 currentAttachments = {}; -- table for holding current attachments
 pupattProfiles = { }; -- table for holding attachment profiles
@@ -142,10 +142,6 @@ local pet 						= GetEntity(player.PetTargetIndex);
 		end
 		slots[1] = 0x00;
 		slots[2] = 0x00;
-		for i,id in pairs(slots) do
-			print(string.format("Equip ID: 0x%X", id));
-		end
-		print(string.format("Unequip: 0x%X", unequip));
 		local unattach = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, 0x00, 0x00, 0x01, 0x00, 0x12, pupSub, 0x0000, slots[1],slots[2],slots[3],slots[4],slots[5],slots[6],slots[7],slots[8],slots[9],slots[10],slots[11],slots[12],slots[13],slots[14]):totable();
 		table.insert(attachmentQueue, { 0x102, unattach});
 	else
@@ -163,14 +159,13 @@ function load_pupatt(attachmentSet)
 	local MainJob 					= AshitaCore:GetDataManager():GetPlayer():GetMainJob();
 	local SubJob	 				= AshitaCore:GetDataManager():GetPlayer():GetSubJob();
 	
-	if (MainJob == 18 or SubJob == 18 and pet == nil) then
+	if ((MainJob == 18 or SubJob == 18)and pet == nil) then
 	
 		--print(player.PetTargetIndex)
 		
 		if (SubJob == 18) then
 			local pupSub	= 0x01;
 		end
-		--ashita.timer.once( 30, Summon_pet)
 		for slot,item in ipairs(attachmentSet) do
 			addAttachment(slot,item);
 		end
@@ -191,7 +186,7 @@ function despawn_pet()
 	if (recastTimerDeactivate == 0 and pet ~= nil) then
 		AshitaCore:GetChatManager():QueueCommand('/ja "Deactivate" <me>' , 1);
 	elseif (recastTimerDeactivate > 0 and pet ~= nil) then
-		print('Deactivate is not ready yet please try again later.')
+		print('<<Pupatt: Deactivate is not ready yet please try again later>>')
 	end
 end;
 
@@ -211,17 +206,17 @@ function Summon_pet()
 			print("You are in a zone that dose not allow pets.")
 		else
 			if (recastTimerActivate == 0) then
-				print("Using Activate.")
+				print("<<Pupatt: Using Activate>>")
 				AshitaCore:GetChatManager():QueueCommand('/ja "Activate" <me>' , 1);
 			elseif(recastTimerdeusex == 0) then
-				print('Activate is not ready using Deus Ex Automata')
+				print('<<Pupatt: Activate is not ready using Deus Ex Automata>>')
 				AshitaCore:GetChatManager():QueueCommand('/ja "Deus Ex Automata" <me>' , 1);
 			elseif(recastTimerdeusex > 0 and recastTimerdeusex > 0) then
-				print('Activate and Deus Ex Automata is not ready yet please try again later.')
+				print('<<Pupatt: Activate and Deus Ex Automata is not ready yet please try again later>>')
 			end
 		end
 	else
-		print("Your puppet is already out.")
+		print("Your puppet is already out")
 	end
 end;
 
@@ -231,17 +226,23 @@ end;
 ----------------------------------------------------------------------------------------------------
 
 function process_queue()
-    if  (os.time() >= (objTimer + objDelay)) then
-        objTimer = os.time();
+    if  (os.clock() >= (objTimer + objDelay)) then
+        objTimer = os.clock();
 		
         -- Ensure the queue has something to process..
-        if (#attachmentQueue > 0) then
+        if (#attachmentQueue > queOffset) then
+			queOffset = 0
+			inProgress = true
             -- Obtain the first queue entry..
             local data = table.remove(attachmentQueue, 1);
 
             -- Send the queued object..
-			print("Sending packet #"..(#attachmentQueue + 1))
+			--print("Sending packet #"..(#attachmentQueue + 1))
             AddOutgoingPacket(data[1], data[2]);
+		elseif (#attachmentQueue == queOffset and inProgress == true) then
+				print("Attachment change completed")
+				inProgress = false
+				queOffset = 1
         end
     end
 end
@@ -409,7 +410,7 @@ ashita.register_event('command', function(command, ntype)
         if pupattProfiles[args[3]] then
 			--despawn_pet()
             ashita.timer.once(1,clearAttachments);
-            ashita.timer.once(1,load_pupatt,pupattProfiles[args[3]]);
+            ashita.timer.once(2,load_pupatt,pupattProfiles[args[3]]);
 			--ashita.timer.once(20,Summon_pet);
         else
             print (args[3] .. " profile not found");
@@ -425,7 +426,6 @@ ashita.register_event('command', function(command, ntype)
 		{'/pupatt list', ' - Lists the profiles as well as the hex values for each attachment.'},
 		{'/pupatt current', ' - Lists the current attachments hex values.'},
 		{'/pupatt clear', ' - Clears the current attachments.'},
-		{'/pupatt save', ' - Saves the new profile created.'},
 		{'/pupatt spawn', ' - Spawns the puppet using whatever is off cooldown.'},
 		{'/pupatt despawn', ' - despawns the puppet.'},	
 		
