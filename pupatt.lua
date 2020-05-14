@@ -106,8 +106,8 @@ ashita.register_event('incoming_packet', function(id, size, packet)
         -- Unpack 14 bytes and set the slotid:attachmentid into currentAttachments table
             for i = 1, 14 do
                attachmentId = string.format("0x%X" , struct.unpack('B', packet, 0x08 + equippedOffset));
-                   currentAttachments[i] = attachmentId;
-                       equippedOffset = equippedOffset + 1;
+               currentAttachments[i] = attachmentId;
+               equippedOffset = equippedOffset + 1;
             end
         end
     end
