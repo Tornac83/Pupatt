@@ -309,7 +309,7 @@ end;
 ---------------------------------------------------------------
 
 function attFromMemory()
-    if (currentAttachments == nil) then
+    if (currentAttachments[1] == nil) then
         local pointer1 = ashita.memory.findpattern('FFXiMain.dll', 0, 'C1E1032BC8B0018D????????????B9????????F3A55F5E5B', 10, 0);
             if (pointer1 == 0) then
                 err('Failed to locate current attachments, please cycle a attachment to continue.');
