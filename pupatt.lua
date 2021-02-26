@@ -105,10 +105,17 @@ end);
 --Pass in a slot ID + hex id of the Attachment
 -- Slot ID 1 = Head, 2=frame, 3-14 = attachment slots
 function addAttachment(slot, id) 
-    slots = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    slots = string.rep(string.char(0x00), 0x88):totable();
     slots[slot] = id;
-    local attach = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, id, 0x00, unequip, 0x00, 0x12, pupSub, 0x0000, slots[1],slots[2],slots[3],slots[4],slots[5],slots[6],slots[7],slots[8],slots[9],slots[10],slots[11],slots[12],slots[13],slots[14]):totable();
-    table.insert(attachmentQueue, { 0x102, attach});
+	-- Build the packet..
+	
+	local packet = string.char(0x02, 0x53, 0x00, 0x00, id, 0x00, unequip, 0x00, 0x12, pupSub, 0x00, 0x00)
+	local packet = packet .. string.char(slots[1],slots[2],slots[3],slots[4],slots[5],slots[6],slots[7],slots[8],slots[9],slots[10],slots[11],slots[12],slots[13],slots[14]) 
+	local packet = packet .. string.rep(string.char(0x00), 0x88);
+
+	packet = packet:totable();
+	
+	table.insert(attachmentQueue, { 0x102, packet});
 end;
 
 ------------------------------------------------------------------------------------------------
@@ -121,14 +128,22 @@ function clearAttachments()
 
     if(pet == nil) then 
         print ("Clearing Attachments");
-        slots = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        slots = string.rep(string.char(0x00), 0x88):totable();
         for slot,id in pairs(currentAttachments) do 
             slots[slot] = id;
         end
         slots[1] = 0x00;
         slots[2] = 0x00;
-        local unattach = struct.pack('I2I2BBBBBBI2BBBBBBBBBBBBBB', 0x5302, 0x0000, 0x00, 0x00, 0x01, 0x00, 0x12, pupSub, 0x0000, slots[1],slots[2],slots[3],slots[4],slots[5],slots[6],slots[7],slots[8],slots[9],slots[10],slots[11],slots[12],slots[13],slots[14]):totable();
-        table.insert(attachmentQueue, { 0x102, unattach});
+        
+		-- Build the packet..
+		local packet = string.char(0x02, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12, pupSub, 0x00, 0x00)
+		local packet = packet .. string.char(slots[1],slots[2],slots[3],slots[4],slots[5],slots[6],slots[7],slots[8],slots[9],slots[10],slots[11],slots[12],slots[13],slots[14]) 
+		local packet = packet .. string.rep(string.char(0x00), 0x88);
+	
+		packet = packet:totable();
+		
+		table.insert(attachmentQueue, { 0x102, packet});
+		
     else
         print("Puppet still out please despawn to unequip attachments.")
     end
