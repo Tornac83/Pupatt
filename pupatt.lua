@@ -136,7 +136,7 @@ function clearAttachments()
         slots[2] = 0x00;
         
 		-- Build the packet..
-		local packet = string.char(0x02, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12, pupSub, 0x00, 0x00)
+		local packet = string.char(0x02, 0x53, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x12, pupSub, 0x00, 0x00)
 		local packet = packet .. string.char(slots[1],slots[2],slots[3],slots[4],slots[5],slots[6],slots[7],slots[8],slots[9],slots[10],slots[11],slots[12],slots[13],slots[14]) 
 		local packet = packet .. string.rep(string.char(0x00), 0x88);
 	
